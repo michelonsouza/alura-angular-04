@@ -2,36 +2,61 @@ import { Item } from 'src/app/interfaces/iItem';
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ListaDeCompraService {
-
-  private listaDeCompra: Item[] = [
-    {
-      "id": 1,
-      "nome": "Queijo prato",
-      "data": "Segunda-feira (31/10/2022) às 08:30",
-      "comprado": false
-    },
-    {
-      "id": 2,
-      "nome": "Leite integral",
-      "data": "Segunda-feira (31/10/2022) às 08:30",
-      "comprado": false
-    },
-    {
-      "id": 3,
-      "nome": "Mamão papaia",
-      "data": "Segunda-feira (31/10/2022) às 08:30",
-      "comprado": true
-    },
-  ]
+  private listaDeCompra: Item[] = [];
 
   constructor() {
-    console.log('Instanciando dependências necessárias para o serviço.');
+    this.listaDeCompra = JSON.parse(
+      localStorage.getItem('items') || '[]'
+    ) as Item[];
   }
 
-  getListaDeCompra(){
-    return this.listaDeCompra;
+  async getListaDeCompra() {
+    return new Promise<Item[]>((resolve) => {
+      resolve(this.listaDeCompra);
+    });
+  }
+
+  criarItem(name: string) {
+    const id = this.listaDeCompra.length + 1;
+    const item: Item = {
+      id,
+      nome: name,
+      data: new Date().toLocaleString('pt-BR'),
+      comprado: false,
+    };
+
+    return item;
+  }
+
+  adicionarItemNaList(nome: string) {
+    const item = this.criarItem(nome);
+    this.listaDeCompra.push(item);
+    // this.atualizarLocalStorage();
+  }
+
+  editarItemDaLista(itemAntigo: Item, nomeEditadoDoItem: string) {
+    const itemEditado: Item = {
+      ...itemAntigo,
+      nome: nomeEditadoDoItem,
+    };
+
+    this.listaDeCompra.splice(Number(itemAntigo.id) - 1, 1, itemEditado);
+    // this.atualizarLocalStorage();
+  }
+
+  excluirItemDaLista(id: string | number) {
+    const index = this.listaDeCompra.findIndex((i) => i.id === id);
+    this.listaDeCompra.splice(index, 1);
+  }
+
+  clearList() {
+    this.listaDeCompra = [];
+  }
+
+  atualizarLocalStorage() {
+    localStorage.setItem('items', JSON.stringify(this.listaDeCompra));
   }
 }
